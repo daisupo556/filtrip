@@ -38,3 +38,7 @@ body[data-screen=home] #app .app-header h1,body[data-screen=mine] #app .app-head
 
 /* 投稿文の改行を一覧プレビューでも保つ(投稿だけが改行を含む) */
 .social-preview .social-body>span:first-child,.content-card[data-content-type="投稿"] .card-copy p{white-space:pre-line}
+
+/* 人物検索: 一致した言葉と、0人のときの入力例 */
+.person-row .match-note{display:block;margin-top:5px;font-size:12px;font-weight:600;color:#2f6f8f;line-height:1.4}
+.example-caption{margin:16px 0 8px;font-size:13px;color:#59738a}.example-list{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}.example-list .chip{border:0;cursor:pointer;font-size:14px;padding:9px 13px;color:var(--navy,#0c507c)}
