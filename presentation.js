@@ -3,11 +3,20 @@
  'use strict';
  const q=s=>document.querySelector(s), reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
  const chapters=[
- {name:'好きを共有する',title:'あなたの/「好き」が、\n誰かの/旅先に/なる。',copy:'おすすめが、/いつも/似たものばかりに/なっていませんか。\n誰かの「好き」を通して、/まだ知らない/世界へ。'},
+ {name:'好きを共有する',title:'あなたの/「好き」が、\n誰かの/旅先に/なる。',copy:'誰かの「好き」を通して、\nまだ知らない/世界へ。'},
  {name:'自分の世界',title:'音楽も、/動画も、/読みものも。',copy:'アプリを行き来しなくても、\n好きなものに/出会えます。'},
  {name:'新しい出会い',title:'普段、/自分が/見ない/ものとの/出会いを。',copy:'気になる誰かの視点から、\nいつもと違う/コンテンツを/見つける。'},
  {name:'好きから会話へ',title:'同じ「好き」から、\n話が/広がる。',copy:'気になる人のページから、\nそのまま/話しかけられます。'}
  ];
+ // Opening slides shown before chapter 1: text only, one click each.
+ const stepIcons=['heart','search','person','bookmark'],stepLabels=['好きを選ぶ','気になる人を探す','その人の世界をのぞく','気に入ったら持ち帰る'];
+ const prologue=[
+ {title:'気になるあの人の\n“おすすめ欄”、\nのぞいてみたくない？',copy:'好きな人は、/ふだん何を/見ているんだろう。'},
+ {title:'あなたのおすすめは、\nあなたの「好き」だけで/できている。',copy:'見るほど似たものが集まり、/気づけば同じ景色の中。\nこれを“フィルターバブル”と言います。'},
+ {title:'FILTRIP =/FILTER × TRIP',copy:'誰かのフィルターを借りて、\n泡の外へ/旅に出る。'},
+ {title:'好きから、人の世界へ。',copy:'',steps:true}
+ ];
+ let pIndex=0;
  let active=false,freeState=null,chapter=0,token=0,paused=false,running=false,phase='intro';
  let chapterEnds=[],advance=null,noteSeen=false,segment=0;
  // Skipping: a click while an operation plays finishes the rest of that segment instantly, then moves to the next explanation.
@@ -34,8 +43,11 @@
  else{state=newState();state.profile={nickname:'はる',age:'24',job:'会社員',region:'東京都',gender:'',portraitIndex:2};state.age='20代';state.answers=[0,1,0,1,0,1,0,1,0,1,0,1];if(index>0)state.favorites=['book-0-0','game-0-0'];}
  chapterEnds.length=index;state.guideOn=true;state.history=[];state.quizPage=0;state.screen=['welcome','home','search','home'][index];render();
  }
- function introChapter(index){stop();chapter=Math.max(0,Math.min(chapters.length-1,index));phase='intro';seed(chapter);document.body.classList.add('story-intro');intro.hidden=false;q('.presentation').inert=true;controls.hidden=false;q('#intro-index').textContent=`${chapter+1} / ${chapters.length}　${chapters[chapter].name}`;q('#intro-title').innerHTML=ph(chapters[chapter].title);q('#intro-copy').innerHTML=ph(chapters[chapter].copy);q('#chapter-select').value=String(chapter);q('#story-prev').disabled=chapter===0;q('#story-next').disabled=false;q('#story-next').textContent='→';q('#story-pause').disabled=true;status('クリックで進む');intro.tabIndex=0;intro.focus({preventScroll:true});}
- function enter(){if(active)return;freeState=structuredClone(state);chapterEnds=[];active=true;window.FILTRIP_PRESENTING=true;q('.phone').inert=true;document.body.dataset.mode='story';document.body.classList.remove('guide-hidden');q('.mode-switch [data-mode=story]').setAttribute('aria-pressed','true');q('.mode-switch [data-mode=free]').setAttribute('aria-pressed','false');introChapter(0);dispatchEvent(new Event('resize'));}
+ function introChapter(index){stop();chapter=Math.max(0,Math.min(chapters.length-1,index));phase='intro';seed(chapter);document.body.classList.add('story-intro');intro.hidden=false;q('.presentation').inert=true;controls.hidden=false;q('#intro-index').textContent=`${chapter+1} / ${chapters.length}　${chapters[chapter].name}`;q('#intro-title').innerHTML=ph(chapters[chapter].title);q('#intro-copy').innerHTML=ph(chapters[chapter].copy);q('#chapter-select').value=String(chapter);q('#story-prev').disabled=false;const sb=q('#intro-steps');if(sb)sb.hidden=true;q('#intro-copy').hidden=false;replayIntro();q('#story-next').disabled=false;q('#story-next').textContent='→';q('#story-pause').disabled=true;status('クリックで進む');intro.tabIndex=0;intro.focus({preventScroll:true});}
+ function stepsBox(){let box=q('#intro-steps');if(!box){box=document.createElement('ol');box.id='intro-steps';box.className='intro-steps';box.hidden=true;q('#intro-copy').before(box);}return box;}
+ function replayIntro(){const inner=q('.chapter-intro-inner');if(!inner||reduced())return;inner.style.animation='none';void inner.offsetWidth;inner.style.animation='';}
+ function showPrologue(index){stop();pIndex=Math.max(0,Math.min(prologue.length-1,index));chapter=0;phase='prologue';seed(0);const slide=prologue[pIndex];document.body.classList.add('story-intro');intro.hidden=false;q('.presentation').inert=true;controls.hidden=false;q('#intro-title').innerHTML=ph(slide.title);q('#intro-copy').innerHTML=ph(slide.copy);q('#intro-copy').hidden=!slide.copy;const box=stepsBox();box.hidden=!slide.steps;box.innerHTML=slide.steps?stepLabels.map((t,i)=>`<li><span class="step-icon">${functionalIcon(stepIcons[i])}</span><b>${t}</b></li>`).join(''):'';q('#chapter-select').value='0';q('#story-prev').disabled=pIndex===0;q('#story-next').disabled=false;q('#story-next').textContent='→';q('#story-pause').disabled=true;status('クリックで進む');replayIntro();intro.tabIndex=0;intro.focus({preventScroll:true});}
+ function enter(){if(active)return;freeState=structuredClone(state);chapterEnds=[];active=true;window.FILTRIP_PRESENTING=true;q('.phone').inert=true;document.body.dataset.mode='story';document.body.classList.remove('guide-hidden');q('.mode-switch [data-mode=story]').setAttribute('aria-pressed','true');q('.mode-switch [data-mode=free]').setAttribute('aria-pressed','false');showPrologue(0);dispatchEvent(new Event('resize'));}
  function leave(){if(!active)return;const finished=phase==='done'&&chapter===chapters.length-1;stop();active=false;window.FILTRIP_PRESENTING=false;q('.phone').inert=false;document.body.dataset.mode='free';document.body.classList.remove('story-intro');intro.hidden=true;controls.hidden=true;q('.presentation').inert=false;state=freeState;freeState=null;if(finished&&state.screen==='welcome')state.screen='home';render();q('.mode-switch [data-mode=story]').setAttribute('aria-pressed','false');q('.mode-switch [data-mode=free]').setAttribute('aria-pressed','true');dispatchEvent(new Event('resize'));q('.mode-switch [data-mode=free]').focus({preventScroll:true});}
  async function target(selector,id){await wait(40,id);let el=q(selector);for(let n=0;!el&&n<40;n++){await new Promise(r=>setTimeout(r,25));assertRun(id);el=q(selector);}if(!el)throw new Error('操作対象が見つかりません: '+selector);const scroll=el.closest('.app-scroll,.sheet-options');if(scroll){const a=el.getBoundingClientRect(),b=scroll.getBoundingClientRect();if(a.top<b.top+8||a.bottom>b.bottom-8){scroll.scrollTop+=(a.top+a.height/2)-(b.top+b.height/2);await wait(100,id);}}return el;}
  async function mark(el,id){if(skip){pointer.hidden=true;return;}const r=el.getBoundingClientRect();pointer.hidden=false;pointer.style.left=`${r.left+r.width*.65}px`;pointer.style.top=`${r.top+r.height*.5}px`;pointer.classList.remove('press');await wait(100,id);pointer.classList.add('press');await wait(100,id);pointer.hidden=true;}
@@ -61,9 +73,9 @@
  await note('好きなものが、\nひとつの場所に集まる。','音楽も動画も記事も、\n掲載元をまたいで並びます。',id);
  await click('[data-home-tab="音楽"]',id);await scrollContent(310,id);await click('[data-home-tab="動画"]',id);await scrollContent(390,id);await click('[data-home-tab="記事"]',id);await scrollContent(260,id);await wait(400,id);
  }else if(chapter===2){
- await note('「こんな人」の目で/見てみる。','人物像や、好きな作品から、\n気になる人たちを探します。',id);
- await type('#person-query','音楽が好きな人',id);await click('.advanced-search summary',id);await click('[data-search-category=music]',id);await click('[data-search-category=game]',id);await click('[data-action=search-run]',id);await click('[data-action=open-result-world]',id);
- await note('音楽から探し始めたのに、\n動画や記事へ。','人を経由すると、\nジャンルを越えて広がります。',id);
+ await note('「こんな人」の目で/見てみる。','見た目や雰囲気からでも、\n気になる人を探せます。',id);
+ await type('#person-query','ゴスロリファッションの女の子',id);await click('[data-action=search-run]',id);await click('[data-action=open-result-world]',id);
+ await note('服から探し始めたのに、\n縫い方の動画や記事へ。','人を経由すると、服から音楽や建物の話まで、\nジャンルを越えて広がります。',id);
  await click('[data-tab="動画"]',id);await scrollContent(350,id);await click('[data-tab="記事"]',id);await scrollContent(240,id);await click('.world-feed [data-action=detail]',id);
  await note('なぜ出会えたのかが/分かる。','何人が好きか、/自分とどこが重なるかを確かめてから、/自分の世界へ持ち帰ります。',id);
  await click('[data-action=why-current]',id);await click('.action-foot [data-action=add]',id);await click('[data-action=show-mine]',id);
@@ -84,14 +96,14 @@
  }catch(error){if(error.message==='cancelled')return;running=false;phase='error';pointer.hidden=true;q('#story-pause').disabled=true;status('操作を再開できませんでした。「もう一度」でこの章を再生できます。');console.error(error);}
  }
  document.addEventListener('click',event=>{const mode=event.target.closest('.mode-switch [data-mode]')?.dataset.mode;if(mode==='story')enter();if(mode==='free')leave();});
- function advanceStory(){if(phase==='playing'){requestSkip();return;}if(performance.now()<skipLock)return;if(phase==='waiting'&&advance){const pending=advance;advance=null;q('#story-next').disabled=false;pending(true);}else if(phase==='intro')run();else if(phase==='done'){if(chapter===chapters.length-1)leave();else introChapter(chapter+1);}}
+ function advanceStory(){if(phase==='prologue'){if(pIndex<prologue.length-1)showPrologue(pIndex+1);else introChapter(0);return;}if(phase==='playing'){requestSkip();return;}if(performance.now()<skipLock)return;if(phase==='waiting'&&advance){const pending=advance;advance=null;q('#story-next').disabled=false;pending(true);}else if(phase==='intro')run();else if(phase==='done'){if(chapter===chapters.length-1)leave();else introChapter(chapter+1);}}
  // One click advances one segment. A click during an animation finishes that segment instantly and moves on; extra clicks in a burst are ignored, never queued.
  document.addEventListener('click',event=>{if(!active||!event.isTrusted||event.target.closest('.mode-switch,.story-controls,.brand'))return;event.preventDefault();event.stopImmediatePropagation();advanceStory();},true);
  document.addEventListener('keydown',event=>{if(!active||!event.isTrusted)return;const onNext=event.target.matches?.('#story-next');if(event.target.closest('button,select,input,a')&&!(onNext&&event.key==='ArrowRight'))return;if(['ArrowRight',' ','Enter'].includes(event.key)){event.preventDefault();advanceStory();}},true);
- q('#story-start').onclick=advanceStory;q('#story-replay').onclick=()=>introChapter(chapter);q('#story-prev').onclick=()=>introChapter(chapter-1);q('#story-next').onclick=advanceStory;q('#chapter-select').onchange=e=>introChapter(Number(e.target.value));q('#story-pause').onclick=()=>{if(!running)return;paused=!paused;q('#story-pause').textContent=paused?'再生する':'一時停止';status(paused?'一時停止中':'操作を紹介しています。');};
+ q('#story-start').onclick=advanceStory;q('#story-replay').onclick=()=>phase==='prologue'?showPrologue(pIndex):introChapter(chapter);q('#story-prev').onclick=()=>{if(phase==='prologue')showPrologue(pIndex-1);else if(chapter===0&&phase==='intro')showPrologue(prologue.length-1);else introChapter(chapter-1);};q('#story-next').onclick=advanceStory;q('#chapter-select').onchange=e=>introChapter(Number(e.target.value));q('#story-pause').onclick=()=>{if(!running)return;paused=!paused;q('#story-pause').textContent=paused?'再生する':'一時停止';status(paused?'一時停止中':'操作を紹介しています。');};
  addEventListener('pagehide',()=>{if(active){window.FILTRIP_PRESENTING=true;}});
  document.body.dataset.mode='free';
  // Exposed read-only progress supports verification without skipping the actual interactions.
- window.FILTRIP_STORY={get progress(){return {active,chapter,phase,running,paused,segment}},get ends(){return structuredClone(chapterEnds)}};
+ window.FILTRIP_STORY={get progress(){return {active,chapter,phase,running,paused,segment,prologue:pIndex}},get ends(){return structuredClone(chapterEnds)}};
  enter();
 })();
