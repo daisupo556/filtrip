@@ -75,9 +75,9 @@
  await note('好きなものが、\nひとつの場所に集まる。','音楽も動画も記事も、\n掲載元をまたいで並びます。',id);
  await click('[data-home-tab="音楽"]',id);await scrollContent(310,id);await click('[data-home-tab="動画"]',id);await scrollContent(390,id);await click('[data-home-tab="記事"]',id);await scrollContent(260,id);await wait(400,id);
  }else if(chapter===2){
- await note('「こんな人」の目で/見てみる。','見た目や雰囲気からでも、\n気になる人を探せます。',id);
- await type('#person-query','ゴスロリファッションの女の子',id);await click('[data-action=search-run]',id);await click('[data-action=open-result-world]',id);
- await note('服から探し始めたのに、\n縫い方の動画や記事へ。','人を経由すると、服から音楽や建物の話まで、\nジャンルを越えて広がります。',id);
+ await note('「こんな人」の目で/見てみる。','服の好みや立場からでも、\n気になる人を探せます。',id);
+ await type('#person-query','古着が好きな大学生',id);await click('[data-action=search-run]',id);await click('[data-action=open-result-world]',id);
+ await note('古着から探し始めたのに、\n縫い目の動画や記事へ。','人を経由すると、服から音楽やバッグの話まで、\nジャンルを越えて広がります。',id);
  await click('[data-tab="動画"]',id);await scrollContent(350,id);await click('[data-tab="記事"]',id);await scrollContent(240,id);await click('.world-feed [data-action=detail]',id);
  await note('なぜ出会えたのかが/分かる。','何人が好きか、/自分とどこが重なるかを確かめてから、/自分の世界へ持ち帰ります。',id);
  await click('[data-action=why-current]',id);await click('.action-foot [data-action=add]',id);await click('[data-action=show-mine]',id);
