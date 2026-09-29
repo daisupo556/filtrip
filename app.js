@@ -183,7 +183,8 @@ function feedCard(c){return `<article class="feed-item ${c.type==='投稿'?'feed
 
 function pagedFeed(items,limit,moreAction){return `${items.slice(0,limit).map(feedCard).join('')}${!items.length?'<div class="empty feed-empty">見つかりませんでした。<br>キーワードや種類を変えてみてください。</div>':''}${items.length>limit?`<button class="secondary load-more" data-action="${moreAction}">もっと読む <small>${Math.min(limit,items.length)} / ${items.length}</small></button>`:''}`;}
 function queryTokens(text){let q=normalizeText(text).replace(/が好きな人たち|が好きな人|好きな人|が好き|好き|な人たち|な人|探してください|探して|に興味がある|に詳しい/g,' ').trim();const known=[...new Set([...people.flatMap(p=>[...(p.tags||[]),p.name,p.job,p.region]),...catalog.flatMap(c=>c.tags||[])].filter(Boolean))].sort((a,b)=>b.length-a.length);const found=[];for(const word of known){const term=normalizeText(word);if(term.length>1&&q.includes(term)){found.push(term);q=q.split(term).join(' ');}}const rest=q.replace(/(\d+)代/g,(_,n)=>{found.push(`${n}代`);return ' ';}).replace(/(?:の|と|で|を|に|が|も|は|な|人|たち)/g,' ').split(/[\s、,・/]+/).filter(Boolean);return [...new Set([...found,...rest])];}
-function personMatchesCategory(p,category){if(!category)return true;const text=normalizeText([p.bio,...(p.tags||[])].join(' '));const patterns={music:/音楽|ジャズ|ロック|クラシック|作曲|ピアノ|鍵盤|電子音/,video:/動画|映像|ゲーム実況|旅|料理|ものづくり/,game:/ゲーム|rpg|インディー|hollow knight/,film:/映画|ミニシアター|シネマ/,book:/読書|小説|本屋|書店|エッセイ|詩|短歌/,art:/アート|美術|デザイン|写真|お絵かき|創作|ドット絵/};return patterns[category]?.test(text)||false;}
+const categoryPatterns={music:/音楽|ジャズ|ロック|クラシック|作曲|ピアノ|鍵盤|電子音/,video:/動画|映像|ゲーム実況|旅|料理|ものづくり/,game:/ゲーム|rpg|インディー|hollow knight/,film:/映画|ミニシアター|シネマ/,book:/読書|小説|本屋|書店|エッセイ|詩|短歌/,art:/アート|美術|デザイン|写真|お絵かき|創作|ドット絵/};
+function personMatchesCategory(p,category){if(!category)return true;const text=normalizeText([p.bio,...(p.tags||[])].join(' '));return categoryPatterns[category]?.test(text)||false;}
 
 function genreChoices(){return [...new Set([...(state.searchCategories.length?categories.filter(c=>state.searchCategories.includes(c.id)).flatMap(c=>Object.keys(c.genres)):['ロック','ジャズ','クラシック','映画','読書','ゲーム','アート','写真','料理','旅','ファッション','ゴスロリ','ものづくり','科学']),...state.searchFilters.genres])];}
 function multiChoices(key,choices){return `<div class="multi-choice-list">${choices.map(value=>`<button type="button" data-search-multi="${key}" data-value="${escapeHTML(value)}" aria-pressed="${state.searchFilters[key].includes(value)}">${escapeHTML(value)}</button>`).join('')}</div>`;}
@@ -191,44 +192,49 @@ function searchValidation(){const f=state.searchFilters,lo=Number(f.ageMin),hi=N
 /* 人物検索: 入力文の中にデータの言葉(タグ・職業・地域・作品名・カテゴリなど)が含まれていれば当たり。多く当たる人ほど上に並べる。 */
 const personCorpusCache=new Map();
 function personCorpus(p){if(!personCorpusCache.has(p.id))personCorpusCache.set(p.id,normalizeText([p.name,p.bio,p.job,p.region,...(p.tags||[])].join(' ')));return personCorpusCache.get(p.id);}
+function personTagText(p){return normalizeText([...(p.tags||[]),p.name,p.job,p.region].join(' '));}
+// 一致の強さ: 職業・地域・タグでの一致(タグが多いほど強い)が最も強く、自己紹介文だけの一致は弱い。
+function tagStrength(p,re){const n=(p.tags||[]).filter(t=>re.test(normalizeText(t))).length;return n?Math.min(1,.5+.25*n):(re.test(normalizeText(p.bio||''))?.3:0);}
 let searchDictCache=null;
-function searchDictionary(){if(searchDictCache)return searchDictCache;const words=new Map();const add=w=>{const t=normalizeText(w);if(t.length>1&&!words.has(t))words.set(t,String(w));};for(const p of people){[...(p.tags||[]),p.name,p.job,p.region].forEach(w=>w&&add(w));}for(const c of catalog)(c.tags||[]).forEach(add);for(const cat of categories){add(cat.name);for(const [genre,titles] of Object.entries(cat.genres)){add(genre);titles.forEach(add);}}return searchDictCache=[...words].sort((a,b)=>b[0].length-a[0].length);}
+function searchDictionary(){if(searchDictCache)return searchDictCache;const words=new Map();const add=(w,attr)=>{const t=normalizeText(w);if(t.length>1&&!words.has(t))words.set(t,{label:String(w),attr:!!attr});};for(const p of people){(p.tags||[]).forEach(w=>w&&add(w));add(p.name);add(p.job,true);add(p.region,true);}for(const c of catalog)(c.tags||[]).forEach(add);for(const cat of categories){add(cat.name);for(const [genre,titles] of Object.entries(cat.genres)){add(genre);titles.forEach(add);}}return searchDictCache=[...words].sort((a,b)=>b[0].length-a[0].length);}
 // 「聴く」「本好き」などの言い回しから、カテゴリ・職業の言葉を拾う。
 const searchTriggers=[
- {label:'音楽',q:/音楽|聴く|聞く|演奏|楽器|作曲/,test:p=>personMatchesCategory(p,'music')},
- {label:'本',q:/読書|小説|読む|(?<!日)本(?!当)/,test:p=>personMatchesCategory(p,'book')},
- {label:'映画',q:/映画|シネマ|観る|上映/,test:p=>personMatchesCategory(p,'film')},
- {label:'ゲーム',q:/ゲーム|遊ぶ|rpg|実況/,test:p=>personMatchesCategory(p,'game')},
- {label:'絵・アート',q:/絵|描く|描い|イラスト|アート|美術|デザイン/,test:p=>/絵|イラスト|アート|美術|デザイン|お絵かき|描|ドット絵|印刷/.test(personCorpus(p))},
- {label:'写真',q:/写真|撮る|カメラ/,test:p=>/写真|フィルム|カメラ|撮/.test(personCorpus(p))},
- {label:'料理',q:/料理|お菓子|ごはん|台所|喫茶/,test:p=>/料理|菓子|台所|喫茶|調理/.test(personCorpus(p))},
- {label:'旅',q:/旅|散歩|ローカル線/,test:p=>/旅|散歩|ローカル線/.test(personCorpus(p))},
- {label:'科学',q:/科学|実験|天文|星空/,test:p=>/科学|実験|天文|星/.test(personCorpus(p))},
- {label:'ファッション',q:/服|ファッション|古着|おしゃれ/,test:p=>/服|ファッション|古着|服飾|装い|ゴスロリ/.test(personCorpus(p))},
- {label:'学生',q:/学生|学部生|大学院/,test:p=>/学生|大学院|学部/.test(normalizeText(p.job||''))},
- {label:'社会人',q:/社会人/,test:p=>/会社員|営業|事務|エンジニア|販売員|編集者|スタッフ|デザイナー/.test(normalizeText(p.job||''))}
+ {label:'音楽',q:/音楽|聴く|聞く|演奏|楽器|作曲/,test:p=>tagStrength(p,categoryPatterns.music)},
+ {label:'本',q:/読書|小説|読む|(?<!日)本(?!当)/,test:p=>tagStrength(p,categoryPatterns.book)},
+ {label:'映画',q:/映画|シネマ|観る|上映/,test:p=>tagStrength(p,categoryPatterns.film)},
+ {label:'ゲーム',q:/ゲーム|遊ぶ|rpg|実況/,test:p=>tagStrength(p,categoryPatterns.game)},
+ {label:'絵・アート',q:/絵|描く|描い|イラスト|アート|美術|デザイン/,test:p=>tagStrength(p,/絵|イラスト|アート|美術|デザイン|お絵かき|描|ドット絵|印刷/)},
+ {label:'写真',q:/写真|撮る|カメラ/,test:p=>tagStrength(p,/写真|フィルム|カメラ|撮/)},
+ {label:'料理',q:/料理|お菓子|ごはん|台所/,test:p=>tagStrength(p,/料理|菓子|台所|調理/)},
+ {label:'喫茶',q:/喫茶|カフェ|コーヒー/,test:p=>tagStrength(p,/喫茶|カフェ|コーヒー/)},
+ {label:'旅',q:/旅|散歩|ローカル線/,test:p=>tagStrength(p,/旅|散歩|ローカル線/)},
+ {label:'科学',q:/科学|実験|天文|星空/,test:p=>tagStrength(p,/科学|実験|天文|星/)},
+ {label:'ファッション',q:/服|ファッション|古着|おしゃれ/,test:p=>tagStrength(p,/服|ファッション|古着|服飾|装い|ゴスロリ/)},
+ {label:'学生',attr:true,q:/学生|学部生|大学院/,test:p=>/学生|大学院|学部/.test(normalizeText(p.job||''))?1:0},
+ {label:'社会人',attr:true,q:/社会人/,test:p=>/会社員|営業|事務|エンジニア|販売員|編集者|スタッフ|デザイナー/.test(normalizeText(p.job||''))?1:0}
 ];
 const searchConceptCache=new Map();
-function searchConcepts(text){const key=normalizeText(text);if(searchConceptCache.has(key))return searchConceptCache.get(key);const hits=new Map();const addHit=(label,test)=>{if(!hits.has(label))hits.set(label,{label,tests:[]});hits.get(label).tests.push(test);};let rest=key;
- for(const [term,label] of searchDictionary()){if(rest.includes(term)){rest=rest.split(term).join(' ');addHit(label,p=>personCorpus(p).includes(term));for(const t of searchTriggers){const m=term.match(t.q);if(m&&m[0]===term)addHit(label,t.test);}}}
- for(const t of searchTriggers){if(t.q.test(rest)){addHit(t.label,t.test);rest=rest.replace(new RegExp(t.q.source,'g'),' ');}}
- rest=rest.replace(/(\d+)代/g,(_,n)=>{addHit(`${n}代`,p=>Math.floor(p.age/10)*10===Number(n));return ' ';});
- const boosts=rest.replace(/が好きな人たち|が好きな人|好きな人|好きな|好き|な人たち|な人|の人たち|の人|探してください|探して|に興味がある|に詳しい/g,' ').replace(/[のとでをにがもはな人たち]/g,' ').split(/[\s、,・/。？?！!]+/).filter(w=>w.length>1||/^[\u4e00-\u9fff]$/.test(w)).map(w=>({label:w,test:p=>personCorpus(p).includes(w)}));
+function searchConcepts(text){const key=normalizeText(text);if(searchConceptCache.has(key))return searchConceptCache.get(key);const hits=new Map();const addHit=(label,test,attr)=>{if(!hits.has(label))hits.set(label,{label,tests:[],factor:1});const h=hits.get(label);h.tests.push(test);if(attr)h.factor=.8;};let rest=key;
+ for(const [term,{label,attr}] of searchDictionary()){if(rest.includes(term)){rest=rest.split(term).join(' ');addHit(label,p=>personTagText(p).includes(term)?1:personCorpus(p).includes(term)?.3:0,attr);for(const t of searchTriggers){const m=term.match(t.q);if(m&&m[0]===term)addHit(label,t.test,t.attr);}}}
+ for(const t of searchTriggers){if(t.q.test(rest)){addHit(t.label,t.test,t.attr);rest=rest.replace(new RegExp(t.q.source,'g'),' ');}}
+ rest=rest.replace(/(\d+)代/g,(_,n)=>{addHit(`${n}代`,p=>Math.floor(p.age/10)*10===Number(n)?1:0,true);return ' ';});
+ const boosts=rest.replace(/が好きな人たち|が好きな人|好きな人|好きな|好き|な人たち|な人|の人たち|の人|探してください|探して|に興味がある|に詳しい/g,' ').replace(/[のとでをにがもはな人たち]/g,' ').split(/[\s、,・/。？?！!]+/).filter(w=>w.length>1||/^[\u4e00-\u9fff]$/.test(w)).map(w=>({label:w,test:p=>personCorpus(p).includes(w)?.1:0}));
  const result={hits:[...hits.values()],boosts};searchConceptCache.set(key,result);return result;}
-function personMatch(p,concepts){const labels=[];let score=0;for(const h of concepts.hits)if(h.tests.some(t=>t(p))){labels.push(h.label);score+=1;}if(score)for(const b of concepts.boosts)if(b.test(p)){labels.push(b.label);score+=.3;}return {labels,score};}
+function personMatch(p,concepts){const labels=[];let score=0;for(const h of concepts.hits){const w=Math.max(...h.tests.map(t=>t(p)));if(w>0){labels.push(h.label);score+=w*h.factor;}}if(score)for(const b of concepts.boosts){const w=b.test(p);if(w>0){labels.push(b.label);score+=w;}}return {labels,score};}
 function matchNote(p){const q=(state.personQuery||'').trim();if(!q)return '';let labels=personMatch(p,searchConcepts(q)).labels;if(!labels.length){const corpus=personCorpus(p);labels=queryTokens(q).filter(t=>/^\d+代$/.test(t)?Math.floor(p.age/10)*10===parseInt(t):corpus.includes(t));}return labels.length?'一致: '+[...new Set(labels)].slice(0,4).join('・'):'';}
 function searchExampleButtons(){return '<div class="example-list">'+['夜に音楽を聴く人','本好きの学生','京都の人'].map(t=>`<button class="chip" data-action="search-example" data-text="${t}">${t}</button>`).join('')+'</div>';}
-function searchPeople(){if(searchValidation())return [];const terms=queryTokens(state.personQuery);const f=state.searchFilters;const work=works.find(w=>normalizeText(w.title)===normalizeText(state.workQuery));
+function searchPeople(){if(searchValidation())return [];const generic=/^([ぁ-ん]|ひと|こと|もの|とか|など|ください|お願い|教えて|知りたい|会いたい|いる|ある|する|して|したい|です|ます)$/;const terms=queryTokens(state.personQuery).filter(t=>!generic.test(t));const f=state.searchFilters;const work=works.find(w=>normalizeText(w.title)===normalizeText(state.workQuery));
  const termsMatch=p=>terms.every(t=>/^\d+代$/.test(t)?Math.floor(p.age/10)*10===parseInt(t):personCorpus(p).includes(t));
  const otherFilters=p=>{const liked=(personLikes.get(p.id)||[]).map(contentById);const corpus=personCorpus(p);if(state.workQuery.trim()&&!(work?corpus.includes(normalizeText(work.title)):corpus.includes(normalizeText(state.workQuery.trim()))||liked.some(c=>matchContent(c,state.workQuery))))return false;if(state.searchCategories.length&&!state.searchCategories.some(category=>personMatchesCategory(p,category)))return false;if(f.ageMin&&p.age<Number(f.ageMin)||f.ageMax&&p.age>Number(f.ageMax))return false;if(f.job&&window.FILTRIP_PROFILE.normalizeJob(p.job)!==f.job||f.region&&window.FILTRIP_PROFILE.normalizeRegion(p.region)!==f.region)return false;if(f.genre&&!corpus.includes(normalizeText(f.genre)))return false;if(f.genres.length&&!f.genres.some(genre=>corpus.includes(normalizeText(genre))))return false;if(f.contentTypes.length&&!liked.some(c=>f.contentTypes.includes(c.type)))return false;if(f.followingOnly&&!state.followIds.includes(p.id))return false;return true;};
  const strict=people.filter(p=>termsMatch(p)&&otherFilters(p));
  // 従来どおり全部の言葉に当たる人を先頭に。従来の結果は消さない。
  if(!(state.personQuery||'').trim())return strict;
+ if(!terms.length)return []; // 「好き」「の」「人」などの汎用語だけ: 意味のある語が無いので0人
  const concepts=searchConcepts(state.personQuery);
  if(!concepts.hits.length||(strict.length&&concepts.hits.length<2))return strict;
  // 言葉の一部にだけ当たる人も、当たった言葉の数が多い順に続ける。
  const strictIds=new Set(strict.map(p=>p.id));
- const extra=people.map((p,i)=>({p,i,...personMatch(p,concepts)})).filter(x=>x.score>=1&&!strictIds.has(x.p.id)&&otherFilters(x.p)).sort((a,b)=>b.score-a.score||a.i-b.i).map(x=>x.p);
+ const extra=people.map((p,i)=>({p,i,...personMatch(p,concepts)})).filter(x=>x.score>0&&!strictIds.has(x.p.id)&&otherFilters(x.p)).sort((a,b)=>b.score-a.score||a.i-b.i).map(x=>x.p);
  return [...strict,...extra];}
 function resultPeople(){return state.searchResultIds.map(personById);}
 function searchSummary(){return [state.personQuery,state.workQuery,state.searchFilters.ageMin?state.searchFilters.ageMin+'歳以上':'',state.searchFilters.ageMax?state.searchFilters.ageMax+'歳以下':'',state.searchFilters.contentTypes.join('・'),state.searchFilters.genres.join('・'),state.searchFilters.followingOnly?'フォロー中':'',state.searchCategories.map(id=>categories.find(c=>c.id===id)?.name).filter(Boolean).join('・'),state.searchFilters.job,state.searchFilters.region,state.searchFilters.genre].filter(Boolean).join(' / ')||'好きなものからつながる人たち';}
