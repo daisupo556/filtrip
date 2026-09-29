@@ -1,4 +1,3 @@
-/* Motion research and design decisions: ../plans/2026-09-29-体験拡充.md. */
 (() => {
  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
  const easing='cubic-bezier(.2,0,0,1)';

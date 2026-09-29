@@ -1,4 +1,3 @@
-/* Shared registration/search vocabulary. See verification/review-ui/README.md. */
 (()=>{
 const jobs={
 '学生':['高校生','大学生','大学院生','短大生','専門学校生','その他の学生'],
