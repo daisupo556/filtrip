@@ -14,3 +14,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px #1d729316}
 @media(hover:hover){button:not(:disabled):hover{filter:brightness(.97)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}button.is-pressed,button:active{transform:none!important;filter:brightness(.91)}}
 .category-graphic{display:block;width:100px;height:100px;color:var(--navy);flex-shrink:0;margin:0 auto;overflow:visible}.favorite>.category-graphic{width:108px;height:108px;margin:4px auto 12px}.work-card>.category-graphic{width:42px;height:42px;margin:0;flex-shrink:0}
+/* Content-type tabs: the list under the tab bar follows a horizontal drag/swipe; vertical scrolling stays with the browser. */
+#app .app-scroll .tabs~*{touch-action:pan-y;-webkit-user-select:none;user-select:none}
+#app .app-scroll .tabs~* img{-webkit-user-drag:none}
+#app .app-scroll.is-swiping,#app .app-scroll.is-swiping *{cursor:grabbing!important}
