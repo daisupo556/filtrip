@@ -195,6 +195,7 @@ function personCorpus(p){if(!personCorpusCache.has(p.id))personCorpusCache.set(p
 function personTagText(p){return normalizeText([...(p.tags||[]),p.name,p.job,p.region].join(' '));}
 // 一致の強さ: 職業・地域・タグでの一致(タグが多いほど強い)が最も強く、自己紹介文だけの一致は弱い。
 function tagStrength(p,re){const n=(p.tags||[]).filter(t=>re.test(normalizeText(t))).length;return n?Math.min(1,.5+.25*n):(re.test(normalizeText(p.bio||''))?.3:0);}
+function termStrength(p,term){if(!personTagText(p).includes(term))return personCorpus(p).includes(term)?.3:0;const n=(p.tags||[]).filter(t=>normalizeText(t).includes(term)).length;const exact=[...(p.tags||[]),p.job,p.region,p.name].some(t=>normalizeText(t)===term);return 1+(exact?.5:0)+.1*Math.min(5,Math.max(0,n-1));}
 let searchDictCache=null;
 function searchDictionary(){if(searchDictCache)return searchDictCache;const words=new Map();const add=(w,attr)=>{const t=normalizeText(w);if(t.length>1&&!words.has(t))words.set(t,{label:String(w),attr:!!attr});};for(const p of people){(p.tags||[]).forEach(w=>w&&add(w));add(p.name);add(p.job,true);add(p.region,true);}for(const c of catalog)(c.tags||[]).forEach(add);for(const cat of categories){add(cat.name);for(const [genre,titles] of Object.entries(cat.genres)){add(genre);titles.forEach(add);}}return searchDictCache=[...words].sort((a,b)=>b[0].length-a[0].length);}
 // 「聴く」「本好き」などの言い回しから、カテゴリ・職業の言葉を拾う。
@@ -215,12 +216,12 @@ const searchTriggers=[
 ];
 const searchConceptCache=new Map();
 function searchConcepts(text){const key=normalizeText(text);if(searchConceptCache.has(key))return searchConceptCache.get(key);const hits=new Map();const addHit=(label,test,attr)=>{if(!hits.has(label))hits.set(label,{label,tests:[],factor:1});const h=hits.get(label);h.tests.push(test);if(attr)h.factor=.8;};let rest=key;
- for(const [term,{label,attr}] of searchDictionary()){if(rest.includes(term)){rest=rest.split(term).join(' ');addHit(label,p=>personTagText(p).includes(term)?1:personCorpus(p).includes(term)?.3:0,attr);for(const t of searchTriggers){const m=term.match(t.q);if(m&&m[0]===term)addHit(label,t.test,t.attr);}}}
+ for(const [term,{label,attr}] of searchDictionary()){if(rest.includes(term)){rest=rest.split(term).join(' ');addHit(label,p=>termStrength(p,term),attr);for(const t of searchTriggers){const m=term.match(t.q);if(m&&m[0]===term)addHit(label,t.test,t.attr);}}}
  for(const t of searchTriggers){if(t.q.test(rest)){addHit(t.label,t.test,t.attr);rest=rest.replace(new RegExp(t.q.source,'g'),' ');}}
  rest=rest.replace(/(\d+)代/g,(_,n)=>{addHit(`${n}代`,p=>Math.floor(p.age/10)*10===Number(n)?1:0,true);return ' ';});
  const boosts=rest.replace(/が好きな人たち|が好きな人|好きな人|好きな|好き|な人たち|な人|の人たち|の人|探してください|探して|に興味がある|に詳しい/g,' ').replace(/[のとでをにがもはな人たち]/g,' ').split(/[\s、,・/。？?！!]+/).filter(w=>w.length>1||/^[\u4e00-\u9fff]$/.test(w)).map(w=>({label:w,test:p=>personCorpus(p).includes(w)?.1:0}));
  const result={hits:[...hits.values()],boosts};searchConceptCache.set(key,result);return result;}
-function personMatch(p,concepts){const labels=[];let score=0;for(const h of concepts.hits){const w=Math.max(...h.tests.map(t=>t(p)));if(w>0){labels.push(h.label);score+=w*h.factor;}}if(score)for(const b of concepts.boosts){const w=b.test(p);if(w>0){labels.push(b.label);score+=w;}}return {labels,score};}
+function personMatch(p,concepts){const labels=[];let score=0,interest=false;for(const h of concepts.hits){const w=Math.max(...h.tests.map(t=>t(p)));if(w>0){labels.push(h.label);score+=w*h.factor;if(h.factor===1)interest=true;}}if(score)for(const b of concepts.boosts){const w=b.test(p);if(w>0){labels.push(b.label);score+=w;}}return {labels,score,interest};}
 function matchNote(p){const q=(state.personQuery||'').trim();if(!q)return '';let labels=personMatch(p,searchConcepts(q)).labels;if(!labels.length){const corpus=personCorpus(p);labels=queryTokens(q).filter(t=>/^\d+代$/.test(t)?Math.floor(p.age/10)*10===parseInt(t):corpus.includes(t));}return labels.length?'一致: '+[...new Set(labels)].slice(0,4).join('・'):'';}
 function searchExampleButtons(){return '<div class="example-list">'+['夜に音楽を聴く人','本好きの学生','京都の人'].map(t=>`<button class="chip" data-action="search-example" data-text="${t}">${t}</button>`).join('')+'</div>';}
 function searchPeople(){if(searchValidation())return [];const generic=/^([ぁ-ん]|ひと|こと|もの|とか|など|ください|お願い|教えて|知りたい|会いたい|いる|ある|する|して|したい|です|ます)$/;const terms=queryTokens(state.personQuery).filter(t=>!generic.test(t));const f=state.searchFilters;const work=works.find(w=>normalizeText(w.title)===normalizeText(state.workQuery));
@@ -231,11 +232,13 @@ function searchPeople(){if(searchValidation())return [];const generic=/^([ぁ-�
  if(!(state.personQuery||'').trim())return strict;
  if(!terms.length)return []; // 「好き」「の」「人」などの汎用語だけ: 意味のある語が無いので0人
  const concepts=searchConcepts(state.personQuery);
- if(!concepts.hits.length||(strict.length&&concepts.hits.length<2))return strict;
+ if(!concepts.hits.length)return strict;
+ const rank=list=>list.map((p,i)=>({p,i,s:personMatch(p,concepts).score})).sort((a,b)=>b.s-a.s||a.i-b.i).map(x=>x.p);
+ if(strict.length&&concepts.hits.length<2)return rank(strict);
  // 言葉の一部にだけ当たる人も、当たった言葉の数が多い順に続ける。
  const strictIds=new Set(strict.map(p=>p.id));
- const extra=people.map((p,i)=>({p,i,...personMatch(p,concepts)})).filter(x=>x.score>0&&!strictIds.has(x.p.id)&&otherFilters(x.p)).sort((a,b)=>b.score-a.score||a.i-b.i).map(x=>x.p);
- return [...strict,...extra];}
+ const extra=people.map((p,i)=>({p,i,...personMatch(p,concepts)})).filter(x=>x.score>0&&(!strict.length||x.interest)&&!strictIds.has(x.p.id)&&otherFilters(x.p)).sort((a,b)=>b.score-a.score||a.i-b.i).map(x=>x.p);
+ return [...rank(strict),...extra];}
 function resultPeople(){return state.searchResultIds.map(personById);}
 function searchSummary(){return [state.personQuery,state.workQuery,state.searchFilters.ageMin?state.searchFilters.ageMin+'歳以上':'',state.searchFilters.ageMax?state.searchFilters.ageMax+'歳以下':'',state.searchFilters.contentTypes.join('・'),state.searchFilters.genres.join('・'),state.searchFilters.followingOnly?'フォロー中':'',state.searchCategories.map(id=>categories.find(c=>c.id===id)?.name).filter(Boolean).join('・'),state.searchFilters.job,state.searchFilters.region,state.searchFilters.genre].filter(Boolean).join(' / ')||'好きなものからつながる人たち';}
 function resultGroup(){const ids=state.searchResultIds;return {id:'search-group',name:searchSummary(),members:ids.length,kind:'group',entry:state.workQuery||state.personQuery||'好きなもの',tags:[state.searchFilters.job,state.searchFilters.region,state.searchFilters.genre].filter(Boolean),personIds:ids,contentIds:[...new Set(ids.flatMap(id=>personLikes.get(id)||[]))]};}
