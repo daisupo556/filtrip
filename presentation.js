@@ -13,7 +13,7 @@
  const prologue=[
  {title:'気になるあの人の\n“おすすめ欄”、\nのぞいてみたくない？',copy:'好きな人は、/ふだん何を/見ているんだろう。'},
  {title:'あなたのおすすめは、\nあなたの「好き」だけで/できている。',copy:'見るほど似たものが集まり、/気づけば同じ景色の中。\nこれを“フィルターバブル”と言います。'},
- {title:'FILTRIP =/FILTER × TRIP',copy:'誰かのフィルターを借りて、\n泡の外へ/旅に出る。'},
+ {title:'FILTRIP =\u00a0/FILTER × TRIP',copy:'誰かのフィルターを借りて、\n泡の外へ/旅に出る。'},
  {title:'好きから、人の世界へ。',copy:'',steps:true}
  ];
  let pIndex=0;
