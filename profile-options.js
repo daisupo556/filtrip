@@ -1,0 +1,18 @@
+/* Shared registration/search vocabulary. See verification/review-ui/README.md. */
+(()=>{
+const jobs={
+'学生':['高校生','大学生','大学院生','短大生','専門学校生','その他の学生'],
+'事務・ビジネス':['会社員','営業職','事務職','企画・マーケティング','人事・総務','経理・財務','コンサルタント','金融専門職'],
+'技術・ものづくり':['ITエンジニア','研究職','製造・生産技術','建築・土木','整備士','農林水産業'],
+'クリエイティブ':['デザイナー','イラストレーター','編集者・ライター','写真家','映像制作者','音楽家','クリエイター'],
+'医療・福祉・教育':['医師','看護師','薬剤師','医療技術職','介護・福祉職','保育士','教師・講師'],
+'販売・サービス':['販売職','飲食業','美容師・理容師','美容・エステ','旅行・宿泊業','運輸・物流','接客・サービス'],
+'その他の仕事・暮らし':['公務員','法律・会計の専門職','経営者・役員','自営業','フリーランス','パート・アルバイト','家事・育児に専念','求職中','退職・リタイア','その他']};
+const regions={'北海道・東北':['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県'],'関東':['茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県'],'中部':['新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県'],'近畿':['三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県'],'中国':['鳥取県','島根県','岡山県','広島県','山口県'],'四国':['徳島県','香川県','愛媛県','高知県'],'九州・沖縄':['福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'],'海外':['海外']};
+const aliases={'学生':'その他の学生','服飾学生':'専門学校生','編集者':'編集者・ライター','書店員':'販売職','販売員':'販売職','喫茶店スタッフ':'飲食業','菓子店スタッフ':'飲食業','服飾デザイナー':'デザイナー'};
+const normalizeJob=x=>aliases[x]||x;
+const normalizeRegion=x=>Object.values(regions).flat().find(r=>r===x||r.replace(/[都府県]$/,'')===x||String(x).startsWith(r))||'';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const options=(groups,current,empty)=>`<option value="">${empty}</option>`+Object.entries(groups).map(([group,items])=>`<optgroup label="${group}">${items.map(x=>`<option value="${esc(x)}" ${current===x?'selected':''}>${esc(x)}</option>`).join('')}</optgroup>`).join('');
+window.FILTRIP_PROFILE={jobs,regions,normalizeJob,normalizeRegion,jobOptions:(v,empty='選択してください')=>options(jobs,normalizeJob(v),empty),regionOptions:(v,empty='都道府県を選択')=>options(regions,normalizeRegion(v),empty)};
+})();

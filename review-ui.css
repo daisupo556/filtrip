@@ -1,0 +1,29 @@
+/* White FILTRIP header and shared profile/search controls. */
+body:is([data-screen=home],[data-screen=search],[data-screen=results]) .status-bar{background:#fff;color:var(--navy)}
+body:is([data-screen=home],[data-screen=search],[data-screen=results]) .app-header{background:#fff;color:var(--navy);padding:8px 18px;min-height:55px}
+body:is([data-screen=home],[data-screen=search],[data-screen=results]) .app-header h1{font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:.025em;text-align:center;line-height:1.35}
+body:is([data-screen=home],[data-screen=search]) .app-header>.header-end:first-child{display:block}
+body[data-screen=search] .app-scroll>h2{font-size:23px;margin:14px 0 18px}
+#app input::placeholder,#app textarea::placeholder{color:#91a0ad;opacity:1;font-weight:400}
+.basic-profile input,.basic-profile select{font-weight:400}
+.basic-profile select.is-empty{color:#91a0ad}
+.basic-profile select option,.basic-profile select optgroup{color:var(--navy)}
+.profile-form-stack{display:contents}
+.basic-profile{gap:18px;margin:22px 0}
+.basic-profile label{gap:7px}
+.favorite-switcher{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;padding:0 0 11px;margin:0 0 10px;border-bottom:1px solid var(--line)}
+.favorite-switcher button{min-height:38px;padding:7px 1px;font-size:12px;font-weight:500;border-radius:8px;color:#667f95;white-space:nowrap}
+.favorite-switcher button[aria-pressed=true]{background:#e4efee;color:var(--navy);font-weight:700}
+.favorite-switcher button:hover{background:#edf4f7}
+.selection-caption{font-size:13px;font-weight:600;margin:18px 0 8px!important}
+.selection-caption span,.multi-filter legend small{font-size:11px;color:#73899c;font-weight:400;margin-left:7px}
+.multi-filter{border:0;padding:0;margin:0;min-width:0}
+.multi-filter legend{padding:0;margin-bottom:10px;font-size:15px;font-weight:600}
+.multi-choice-list{display:flex;flex-wrap:wrap;gap:8px}
+.multi-choice-list button{border:1px solid #c5d8e5;border-radius:18px;padding:8px 12px;font-size:13px;min-height:36px}
+.multi-choice-list button[aria-pressed=true]{background:#e4efee;border-color:#80aeb4;color:var(--navy);box-shadow:inset 0 0 0 1px #80aeb4}
+[data-action=search-run]{font-family:var(--display);font-size:17px;letter-spacing:.09em;font-weight:600}
+.category-art{object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0}
+.favorite>.category-art{width:83px;height:83px;margin:0 auto 8px;display:block}
+.work-card>.category-art{width:44px;height:44px}
+.shelf .category-art{width:56px;height:56px}

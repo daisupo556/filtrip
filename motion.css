@@ -1,0 +1,16 @@
+/* Timings are design values grounded in the linked Material guidance. */
+#app{position:relative;isolation:isolate;overflow:hidden}
+button,summary{transition:transform 90ms cubic-bezier(.4,0,.2,1),background-color 160ms ease,color 160ms ease,border-color 160ms ease,box-shadow 160ms ease}
+button:not(:disabled).is-pressed,button:not(:disabled):active,summary.is-pressed{transform:scale(.97);filter:brightness(.95)}
+input,select,textarea{transition:border-color 160ms ease,box-shadow 160ms ease}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px #1d729316}
+.functional-icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.75;flex-shrink:0}
+.functional-icon path,.functional-icon circle,.functional-icon ellipse,.functional-icon rect{vector-effect:non-scaling-stroke}
+.app-nav .functional-icon{width:25px;height:25px;display:block;margin:0 auto 5px}
+.world-summary .functional-icon,.world-card-footer .functional-icon{width:23px;height:23px;vertical-align:middle}
+.add-small .functional-icon{width:34px;height:34px}
+.functional-icon[data-vector="people"]{fill:none!important}
+.motion-outgoing{overflow:hidden!important;user-select:none}
+@media(hover:hover){button:not(:disabled):hover{filter:brightness(.97)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}button.is-pressed,button:active{transform:none!important;filter:brightness(.91)}}
+.category-graphic{display:block;width:100px;height:100px;color:var(--navy);flex-shrink:0;margin:0 auto;overflow:visible}.favorite>.category-graphic{width:108px;height:108px;margin:4px auto 12px}.work-card>.category-graphic{width:42px;height:42px;margin:0;flex-shrink:0}
