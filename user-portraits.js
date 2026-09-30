@@ -1,7 +1,7 @@
 /* FILTRIP user identities; generated eight-character family, separate from content authors. */
 (() => {
   'use strict';
-  const source = new URL('assets/user-portraits/filtrip-people-v1.png', document.currentScript.src).href;
+  const source = new URL('assets/user-portraits/filtrip-people-v1.webp', document.currentScript.src).href;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const indexFor = person => {
     if (Number.isInteger(person?.portraitIndex)) return ((person.portraitIndex % 8) + 8) % 8;

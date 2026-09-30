@@ -33,7 +33,7 @@ window.FILTRIP_CURATED = [
     "genre": "ゲーム",
     "curated": true,
     "media": {
-      "src": "./assets/curated/videos-sheet-v1.png",
+      "src": "./assets/curated/videos-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 0,
@@ -74,7 +74,7 @@ window.FILTRIP_CURATED = [
     "genre": "手芸",
     "curated": true,
     "media": {
-      "src": "./assets/curated/videos-sheet-v1.png",
+      "src": "./assets/curated/videos-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 1,
@@ -114,7 +114,7 @@ window.FILTRIP_CURATED = [
     "genre": "コーヒー",
     "curated": true,
     "media": {
-      "src": "./assets/curated/videos-sheet-v1.png",
+      "src": "./assets/curated/videos-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 0,
@@ -155,7 +155,7 @@ window.FILTRIP_CURATED = [
     "genre": "ゲーム",
     "curated": true,
     "media": {
-      "src": "./assets/curated/videos-sheet-v1.png",
+      "src": "./assets/curated/videos-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 1,
@@ -198,7 +198,7 @@ window.FILTRIP_CURATED = [
     "genre": "ゴスロリ",
     "curated": true,
     "media": {
-      "src": "./assets/curated/videos-sheet-v1.png",
+      "src": "./assets/curated/videos-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 0,
@@ -239,7 +239,7 @@ window.FILTRIP_CURATED = [
     "genre": "映画",
     "curated": true,
     "media": {
-      "src": "./assets/curated/videos-sheet-v1.png",
+      "src": "./assets/curated/videos-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 1,
@@ -280,7 +280,7 @@ window.FILTRIP_CURATED = [
     "genre": "読書",
     "curated": true,
     "media": {
-      "src": "./assets/curated/articles-sheet-v1.png",
+      "src": "./assets/curated/articles-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 0,
@@ -319,7 +319,7 @@ window.FILTRIP_CURATED = [
     "genre": "映画",
     "curated": true,
     "media": {
-      "src": "./assets/curated/articles-sheet-v1.png",
+      "src": "./assets/curated/articles-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 1,
@@ -359,7 +359,7 @@ window.FILTRIP_CURATED = [
     "genre": "アート",
     "curated": true,
     "media": {
-      "src": "./assets/curated/articles-sheet-v1.png",
+      "src": "./assets/curated/articles-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 0,
@@ -399,7 +399,7 @@ window.FILTRIP_CURATED = [
     "genre": "アート",
     "curated": true,
     "media": {
-      "src": "./assets/curated/articles-sheet-v1.png",
+      "src": "./assets/curated/articles-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 1,
@@ -439,7 +439,7 @@ window.FILTRIP_CURATED = [
     "genre": "ジャズ",
     "curated": true,
     "media": {
-      "src": "./assets/curated/articles-sheet-v1.png",
+      "src": "./assets/curated/articles-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 0,
@@ -479,7 +479,7 @@ window.FILTRIP_CURATED = [
     "genre": "読書",
     "curated": true,
     "media": {
-      "src": "./assets/curated/articles-sheet-v1.png",
+      "src": "./assets/curated/articles-sheet-v1.webp",
       "columns": 2,
       "rows": 3,
       "column": 1,
@@ -521,7 +521,7 @@ window.FILTRIP_CURATED = [
     "genre": "ゴスロリ",
     "curated": true,
     "media": {
-      "src": "./assets/curated/posts-sheet-v1.png",
+      "src": "./assets/curated/posts-sheet-v1.webp",
       "columns": 2,
       "rows": 2,
       "column": 0,
@@ -560,7 +560,7 @@ window.FILTRIP_CURATED = [
     "genre": "写真",
     "curated": true,
     "media": {
-      "src": "./assets/curated/posts-sheet-v1.png",
+      "src": "./assets/curated/posts-sheet-v1.webp",
       "columns": 2,
       "rows": 2,
       "column": 1,
@@ -600,7 +600,7 @@ window.FILTRIP_CURATED = [
     "genre": "手芸",
     "curated": true,
     "media": {
-      "src": "./assets/curated/posts-sheet-v1.png",
+      "src": "./assets/curated/posts-sheet-v1.webp",
       "columns": 2,
       "rows": 2,
       "column": 0,
@@ -640,7 +640,7 @@ window.FILTRIP_CURATED = [
     "genre": "読書",
     "curated": true,
     "media": {
-      "src": "./assets/curated/posts-sheet-v1.png",
+      "src": "./assets/curated/posts-sheet-v1.webp",
       "columns": 2,
       "rows": 2,
       "column": 1,
@@ -680,7 +680,7 @@ window.FILTRIP_CURATED = [
     "genre": "ジャズ",
     "curated": true,
     "media": {
-      "src": "./assets/curated/music-sheet-v1.png",
+      "src": "./assets/curated/music-sheet-v1.webp",
       "columns": 2,
       "rows": 2,
       "column": 0,
@@ -721,7 +721,7 @@ window.FILTRIP_CURATED = [
     "genre": "音楽",
     "curated": true,
     "media": {
-      "src": "./assets/curated/music-sheet-v1.png",
+      "src": "./assets/curated/music-sheet-v1.webp",
       "columns": 2,
       "rows": 2,
       "column": 1,
@@ -762,7 +762,7 @@ window.FILTRIP_CURATED = [
     "genre": "音楽",
     "curated": true,
     "media": {
-      "src": "./assets/curated/music-sheet-v1.png",
+      "src": "./assets/curated/music-sheet-v1.webp",
       "columns": 2,
       "rows": 2,
       "column": 0,
@@ -803,7 +803,7 @@ window.FILTRIP_CURATED = [
     "genre": "音楽",
     "curated": true,
     "media": {
-      "src": "./assets/curated/music-sheet-v1.png",
+      "src": "./assets/curated/music-sheet-v1.webp",
       "columns": 2,
       "rows": 2,
       "column": 1,
@@ -817,7 +817,7 @@ window.FILTRIP_CURATED = [
 // Original editorial illustrations follow the reference article artwork.
 for(const [column,id] of ['curated-08','curated-10','curated-12'].entries()){
  const item=window.FILTRIP_CURATED.find(c=>c.id===id);
- item.media={src:'./assets/curated/original-articles-v2.png',columns:3,rows:1,column,row:0,alt:item.title+'のイラスト'};
+ item.media={src:'./assets/curated/original-articles-v2.webp',columns:3,rows:1,column,row:0,alt:item.title+'のイラスト'};
 }
 
 let curatedClipSequence = 0;

@@ -20,6 +20,6 @@
     const key = aliases[name] || name;
     if (!names.has(key)) return '';
     const [width, height, viewBox] = geometry[key];
-    return `<svg xmlns="http://www.w3.org/2000/svg" class="icon category-art transparent-category-art ${escape(className)}" viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false" data-category-art="${escape(key)}" style="overflow:hidden;background:transparent"><image href="${escape(base + key + '-v1.png')}" x="0" y="0" width="${width}" height="${height}"/></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="icon category-art transparent-category-art ${escape(className)}" viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false" data-category-art="${escape(key)}" style="overflow:hidden;background:transparent"><image href="${escape(base + key + '-v1.webp')}" x="0" y="0" width="${width}" height="${height}"/></svg>`;
   };
 })();

@@ -40,7 +40,7 @@ document.fonts?.ready?.then(fitHeadings);
 
  // Images: story mode never shows a half-loaded thumbnail. Scene images are prefetched during the opening slides;
  // each scene waits (with a cap) for the images in view to finish decoding, and anything still loading stays blank until ready.
- const mediaReady=new Map(),GATE_MS=4000,CLICK_GATE_MS=2500;
+ const mediaReady=new Map(),GATE_MS=10000,CLICK_GATE_MS=6000;
  const absUrl=u=>{try{return new URL(u,location.href).href;}catch{return u;}};
  function preload(u){u=absUrl(u);if(!mediaReady.has(u)){const im=new Image();im.decoding='async';im.src=u;mediaReady.set(u,{done:false,p:(im.decode?im.decode():new Promise(r=>{im.onload=r;})).catch(()=>{}).then(()=>{mediaReady.get(u).done=true;})});}return mediaReady.get(u).p;}
  const mediaUrl=el=>absUrl(el.getAttribute('href')||el.getAttribute('src')||'');
@@ -58,7 +58,7 @@ document.fonts?.ready?.then(fitHeadings);
   const topic=contentById('curated-01');if(topic)items.push(topic);const who=people.find(x=>(personLikes.get(x.id)||[]).includes('curated-01'))||people[0];
   for(const cid of (personLikes.get(who.id)||[]).slice(0,6)){const c=contentById(cid);if(c)items.push(c);}
   const urls=[];for(const c of items)urls.push(...urlsIn(thumb(c)));for(const x of [...ids.map(personById),who])urls.push(...urlsIn(avatar(x)));
-  state=keep;const list=[...new Set(urls.map(absUrl))];let i=0;const lane=async()=>{while(i<list.length)await preload(list[i++]);};lane();lane();}catch(e){state=keep;}}
+  state=keep;const fixed=['assets/references/01_welcome.png',...['art','book','film','game','headphone','video'].map(k=>`assets/category-icons/${k}-v1.webp`),'assets/user-portraits/filtrip-people-v1.webp'];const list=[...new Set([...fixed,...urls].map(absUrl))];let i=0;const lane=async()=>{while(i<list.length)await preload(list[i++]);};lane();lane();}catch(e){state=keep;}}
  const PLAYING='操作を紹介しています。クリックで次へ';
  function finishSkip(){skip=false;skipLock=performance.now()+SKIP_LOCK;}
  function requestSkip(){const t=performance.now();if(!running||skip||t<noteLock||t<skipLock)return;skip=true;paused=false;q('#story-pause').textContent='一時停止';pointer.hidden=true;skipWaiter?.();}
@@ -97,7 +97,7 @@ document.fonts?.ready?.then(fitHeadings);
 
  async function run(){if(!active||running)return;if(phase!=='intro'){introChapter(chapter);}const id=++token;running=true;paused=false;phase='playing';status('画像を読み込んでいます…');noteSeen=false;segment=0;skip=false;noteLock=performance.now()+1000;q('#story-next').disabled=false;q('#story-pause').disabled=false;copy.innerHTML='';
  try{
- if(chapter>0){await mediaGate(id,GATE_MS);}status(PLAYING);
+ await mediaGate(id,GATE_MS);status(PLAYING);
  if(!reduced())intro.animate([{opacity:1},{opacity:0}],{duration:180,easing:'ease-out'});await wait(reduced()?40:180,id);if(chapter===0)launching=window.FILTRIP_APP_UI.playWelcome(STORY_LAUNCH);document.body.classList.remove('story-intro');intro.hidden=true;q('.presentation').inert=false;q('#story-next').focus({preventScroll:true});await wait(350,id);
  if(chapter===0){
  // Name, age, job, region, icon and the 12 diagnosis answers are already filled in seed(); only the favourites are shown.
