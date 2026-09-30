@@ -41,7 +41,7 @@ const people=[...basePeople,...(window.FILTRIP_PEOPLE||[]).filter(p=>!basePeople
 const postAuthorName=c=>c.author||(c.by.startsWith('@')?c.title:c.by);
 const personById=id=>people.find(p=>p.id===id)||people[0];
 const normalizeText=value=>String(value||'').normalize('NFKC').toLocaleLowerCase().replace(/ゴシック[・ ]?ロリータ|ロリータファッション/g,'ゴスロリ').replace(/女子|女の子/g,'女性').replace(/男子|男の子/g,'男性').replace(/jazz/g,'ジャズ').replace(/rock/g,'ロック');
-const personLikes=new Map(people.map(p=>{const tags=(p.tags||[]).map(normalizeText);const ranked=catalog.map(c=>({id:c.id,score:(c.tags||[]).filter(t=>tags.some(x=>x===normalizeText(t))).length*3+(c.curated?1:0)})).filter(c=>c.score>0).sort((a,b)=>b.score-a.score);return [p.id,ranked.slice(0,72).map(c=>c.id)];}));
+const personLikes=new Map(people.map(p=>{const tags=(p.tags||[]).map(normalizeText);const ranked=catalog.map(c=>({id:c.id,score:(c.tags||[]).filter(t=>tags.some(x=>x===normalizeText(t))).length*3+(c.curated?1:0)})).filter(c=>c.score>0).sort((a,b)=>b.score-a.score);const forced=(window.FILTRIP_LIKE_OVERRIDES||{})[p.id],ids=ranked.slice(0,72).map(c=>c.id);return [p.id,forced?[...new Set([...forced,...ids])].slice(0,72):ids];}));
 function personWorld(id){const p=personById(id);return {id:p.id,name:p.name,members:1,entry:p.tags?.[0]||'好きなもの',tags:[String(p.age)+'歳',p.job,p.region,...(p.tags||[])].filter(Boolean),kind:'person',personIds:[id],contentIds:personLikes.get(id)||[]};}
 function avatar(personOrId,cls=''){const p=typeof personOrId==='string'?personById(personOrId):personOrId;if(p.id==='mina')return icon('mina',cls);return window.FILTRIP_USER_AVATAR?.(p,cls)||icon('you',cls);}
 const relatedVideos = [

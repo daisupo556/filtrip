@@ -37,3 +37,7 @@ body.story-opening .presentation{opacity:0!important;visibility:hidden}
 /* Headings: break only at the copy's own line breaks; the font shrinks (see fitHeading) instead of wrapping mid-phrase. */
 .fit-nowrap{white-space:nowrap!important;text-wrap:nowrap}
 .fit-nowrap .ph{display:inline}
+/* Story mode: thumbnails fade in once decoded; the tile shows a plain placeholder meanwhile. */
+body[data-mode=story] #app image,body[data-mode=story] #app img{transition:opacity .3s ease}
+body[data-mode=story] #app .generated-media,body[data-mode=story] #app .thumb{background:#eef3f7}
+@media(prefers-reduced-motion:reduce){body[data-mode=story] #app image,body[data-mode=story] #app img{transition:none}}
