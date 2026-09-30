@@ -112,9 +112,11 @@ document.fonts?.ready?.then(fitHeadings);
  await note('「こんな人」の目で/見てみる。','服の好みや立場からでも、\n気になる人を探せます。',id);
  await type('#person-query','古着が好きな大学生',id);await click('[data-action=search-run]',id);await click('[data-action=open-result-world]',id);
  await note('古着から探し始めたのに、\nカフェやビートの動画や記事へ。','人を経由すると、服から喫茶店やビートメイクまで、\nジャンルを越えて広がります。',id);
- await click('[data-tab="動画"]',id);await scrollContent(350,id);await click('[data-tab="記事"]',id);await scrollContent(240,id);await click('.world-feed [data-action=detail]',id);
- await note('なぜ出会えたのかが/分かる。','何人が好きか、/自分とどこが重なるかを確かめてから、/自分の世界へ持ち帰ります。',id);
- await click('[data-action=why-current]',id);await click('.action-foot [data-action=add]',id);await click('[data-action=show-mine]',id);
+ await click('[data-tab="動画"]',id);await scrollContent(350,id);await click('.world-feed [data-action=detail][data-id="ft2-video-037"]',id);
+ await note('なぜ出会えたのかが/分かる。','この動画を好きな人の数や、/その人たちの共通点から、/出会いのつながりを確かめられます。',id);
+ await click('[data-action=why-current]',id);await scrollContent(260,id);
+ await note('気に入ったら、\n自分の「好き」に登録。','「MY WORLDに追加」で、\n出会った動画を自分の世界に残せます。',id);
+ await click('.action-foot [data-action=add]',id);await click('[data-action=show-mine]',id);
  }else{
  const topic=contentById('curated-01');const person=people.find(p=>(personLikes.get(p.id)||[]).includes(topic.id))||people[0];
  await note('コンテンツの先に、\nそれを好きな人がいる。','同じ動画を好きな人のページへ。\nその人の「好き」を、フォローできます。',id);
