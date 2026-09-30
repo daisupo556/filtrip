@@ -34,3 +34,6 @@ body.story-opening .site-header,body.story-opening .story-controls{opacity:0;poi
 @media(prefers-reduced-motion:reduce){.site-header,.story-controls{transition:none}}
 body.story-opening .presentation{opacity:0!important;visibility:hidden}
 .chapter-intro:focus,.chapter-intro:focus-visible{outline:none}
+/* Headings: break only at the copy's own line breaks; the font shrinks (see fitHeading) instead of wrapping mid-phrase. */
+.fit-nowrap{white-space:nowrap!important;text-wrap:nowrap}
+.fit-nowrap .ph{display:inline}

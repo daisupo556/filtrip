@@ -5,14 +5,14 @@
  const chapters=[
  {name:'好きを共有する',title:'あなたの/「好き」が、\n誰かの/旅先に/なる。',copy:'誰かの「好き」を通して、\nまだ知らない/世界へ。'},
  {name:'自分の世界',title:'音楽も、/動画も、/読みものも。',copy:'アプリを行き来しなくても、\n好きなものに/出会えます。'},
- {name:'新しい出会い',title:'普段、/自分が/見ない/ものとの/出会いを。',copy:'気になる誰かの視点から、\nいつもと違う/コンテンツを/見つける。'},
+ {name:'新しい出会い',title:'普段、自分が見ない\nものとの出会いを。',copy:'気になる誰かの視点から、\nいつもと違う/コンテンツを/見つける。'},
  {name:'好きから会話へ',title:'同じ「好き」から、\n話が/広がる。',copy:'気になる人のページから、\nそのまま/話しかけられます。'}
  ];
  // Opening slides shown before chapter 1: text only, one click each.
  const stepIcons=['heart','search','person','bookmark'],stepLabels=['好きを選ぶ','気になる人を探す','その人の世界をのぞく','気に入ったら持ち帰る'];
  const prologue=[
  {title:'気になるあの人の\n“おすすめ欄”、\nのぞいてみたくない？',copy:'好きな人は、/ふだん何を/見ているんだろう。'},
- {title:'あなたのおすすめは、\nあなたの「好き」だけで/できている。',copy:'見るほど似たものが集まり、/気づけば同じ景色の中。\nこれを“フィルターバブル”と言います。'},
+ {title:'あなたのおすすめは、\nあなたの「好き」だけで\nできている。',copy:'見るほど似たものが集まり、/気づけば同じ景色の中。\nこれを“フィルターバブル”と言います。'},
  {title:'FILTRIP =\u00a0/FILTER × TRIP',copy:'誰かのフィルターを借りて、\n泡の外へ/旅に出る。'},
  {title:'好きから、人の世界へ。',copy:'',steps:true}
  ];
@@ -31,6 +31,12 @@
  const ph=t=>escapeHTML(t).split('\n').map(line=>line.split('/').filter(Boolean).map(x=>`<span class="ph">${x}</span>`).join('')).join('<br>');
  function status(text){q('#story-status').textContent=text;}
  function stop(){if(advance){const pending=advance;advance=null;pending(false);}window.FILTRIP_APP_UI?.close();token++;running=false;paused=false;skip=false;skipWaiter=null;pointer.hidden=true;q('#story-pause').textContent='一時停止';}
+
+ // Headings break only where the copy says so ('\n'); each line stays on one line and the font shrinks to fit the column.
+ function fitHeading(el,minRatio=.6){if(!el||!el.clientWidth)return;el.classList.add('fit-nowrap');el.style.fontSize='';const base=parseFloat(getComputedStyle(el).fontSize);let size=base;while(el.scrollWidth>el.clientWidth+.5&&size>base*minRatio){size-=.5;el.style.fontSize=size+'px';}if(el.scrollWidth>el.clientWidth+.5){el.classList.remove('fit-nowrap');el.style.fontSize='';}}
+ function fitHeadings(){fitHeading(q('#intro-title'));fitHeading(q('#story-copy h2'));fitHeading(q('#guide-content h2'));}
+ addEventListener('resize',fitHeadings);{const gc=q('#guide-content');if(gc)new MutationObserver(()=>fitHeading(gc.querySelector('h2'))).observe(gc,{childList:true});}
+document.fonts?.ready?.then(fitHeadings);
  const PLAYING='操作を紹介しています。クリックで次へ';
  function finishSkip(){skip=false;skipLock=performance.now()+SKIP_LOCK;}
  function requestSkip(){const t=performance.now();if(!running||skip||t<noteLock||t<skipLock)return;skip=true;paused=false;q('#story-pause').textContent='一時停止';pointer.hidden=true;skipWaiter?.();}
@@ -38,20 +44,20 @@
  async function launch(id){const done=launching||window.FILTRIP_APP_UI.playWelcome(STORY_LAUNCH);launching=null;await Promise.race([done,new Promise(r=>{skipWaiter=r;})]);skipWaiter=null;if(skip){const w=q('#app .welcome');if(w){w.querySelector('.launch-splash')?.remove();w.classList.remove('welcome-launching');w.querySelectorAll('button').forEach(b=>{b.disabled=false;});}}assertRun(id);}
  function assertRun(id){if(!active||id!==token)throw new Error('cancelled');}
  async function wait(ms,id){let left=ms;while(left>0&&!skip){assertRun(id);await new Promise(r=>setTimeout(r,40));if(!paused)left-=40;}assertRun(id);}
- function setCopy(title,body){noteLock=performance.now()+NOTE_LOCK;copy.innerHTML=`<h2>${ph(title)}</h2><p class="description">${ph(body)}</p>`;if(!reduced())copy.animate([{opacity:0,transform:'translateY(9px)'},{opacity:1,transform:'none'}],{duration:260,easing:'ease-out'});}
+ function setCopy(title,body){noteLock=performance.now()+NOTE_LOCK;copy.innerHTML=`<h2>${ph(title)}</h2><p class="description">${ph(body)}</p>`;fitHeading(copy.querySelector('h2'));if(!reduced())copy.animate([{opacity:0,transform:'translateY(9px)'},{opacity:1,transform:'none'}],{duration:260,easing:'ease-out'});}
  function seed(index){
  const prior=index>0?chapterEnds[index-1]:null;
  if(prior)state=structuredClone(prior);
  else{state=newState();state.profile={nickname:'はる',age:'24',job:'会社員',region:'東京都',gender:'',portraitIndex:2};state.age='20代';state.answers=[0,1,0,1,0,1,0,1,0,1,0,1];if(index>0)state.favorites=['book-0-0','game-0-0'];}
  chapterEnds.length=index;state.guideOn=true;state.history=[];state.quizPage=0;state.screen=['welcome','home','search','home'][index];render();
  }
- function introChapter(index){stop();chapter=Math.max(0,Math.min(chapters.length-1,index));phase='intro';seed(chapter);document.body.classList.add('story-intro');intro.hidden=false;q('.presentation').inert=true;controls.hidden=false;q('#intro-index').textContent=`${chapter+1} / ${chapters.length}　${chapters[chapter].name}`;q('#intro-title').innerHTML=ph(chapters[chapter].title);q('#intro-copy').innerHTML=ph(chapters[chapter].copy);q('#chapter-select').value=String(chapter);q('#story-prev').disabled=false;const sb=q('#intro-steps');if(sb)sb.hidden=true;q('#intro-copy').hidden=false;replayIntro();q('#story-next').disabled=false;q('#story-next').textContent='→';q('#story-pause').disabled=true;status('クリックで進む');intro.tabIndex=0;intro.focus({preventScroll:true});}
+ function introChapter(index){stop();chapter=Math.max(0,Math.min(chapters.length-1,index));phase='intro';seed(chapter);document.body.classList.add('story-intro');intro.hidden=false;q('.presentation').inert=true;controls.hidden=false;q('#intro-index').textContent=`${chapter+1} / ${chapters.length}　${chapters[chapter].name}`;q('#intro-title').innerHTML=ph(chapters[chapter].title);q('#intro-copy').innerHTML=ph(chapters[chapter].copy);fitHeading(q('#intro-title'));q('#chapter-select').value=String(chapter);q('#story-prev').disabled=false;const sb=q('#intro-steps');if(sb)sb.hidden=true;q('#intro-copy').hidden=false;replayIntro();q('#story-next').disabled=false;q('#story-next').textContent='→';q('#story-pause').disabled=true;status('クリックで進む');intro.tabIndex=0;intro.focus({preventScroll:true});}
  // Opening: starts from a blank white page; the catch fades in slowly (headline, then sub-line), then the header and controls.
  function finishOpening(){if(!opening)return;opening=false;openingTimers.forEach(clearTimeout);openingTimers=[];for(const el of [q('#intro-title'),q('#intro-copy')]){el.getAnimations().forEach(a=>a.cancel());el.style.opacity='';}document.body.classList.remove('story-opening');}
  function startOpening(){const t=q('#intro-title'),c=q('#intro-copy');if(reduced()){document.body.classList.remove('story-opening');return;}opening=true;t.style.opacity='0';c.style.opacity='0';const rise=[{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],at=(ms,fn)=>openingTimers.push(setTimeout(fn,ms));at(700,()=>{t.style.opacity='';t.animate(rise,{duration:950,easing:'ease-out',fill:'backwards'});});at(1650,()=>{c.style.opacity='';c.animate(rise,{duration:900,easing:'ease-out',fill:'backwards'});});at(2650,finishOpening);}
  function stepsBox(){let box=q('#intro-steps');if(!box){box=document.createElement('ol');box.id='intro-steps';box.className='intro-steps';box.hidden=true;q('#intro-copy').before(box);}return box;}
  function replayIntro(){const inner=q('.chapter-intro-inner');if(!inner||reduced())return;inner.style.animation='none';void inner.offsetWidth;inner.style.animation='';}
- function showPrologue(index,first=false){finishOpening();stop();pIndex=Math.max(0,Math.min(prologue.length-1,index));chapter=0;phase='prologue';seed(0);const slide=prologue[pIndex];document.body.classList.add('story-intro');intro.hidden=false;q('.presentation').inert=true;controls.hidden=false;q('#intro-title').innerHTML=ph(slide.title);q('#intro-copy').innerHTML=ph(slide.copy);q('#intro-copy').hidden=!slide.copy;const box=stepsBox();box.hidden=!slide.steps;box.innerHTML=slide.steps?stepLabels.map((t,i)=>`<li><span class="step-icon">${functionalIcon(stepIcons[i])}</span><b>${t}</b></li>`).join(''):'';q('#chapter-select').value='0';q('#story-prev').disabled=pIndex===0;q('#story-next').disabled=false;q('#story-next').textContent='→';q('#story-pause').disabled=true;status('クリックで進む');if(first)startOpening();else replayIntro();intro.tabIndex=0;intro.focus({preventScroll:true});}
+ function showPrologue(index,first=false){finishOpening();stop();pIndex=Math.max(0,Math.min(prologue.length-1,index));chapter=0;phase='prologue';seed(0);const slide=prologue[pIndex];document.body.classList.add('story-intro');intro.hidden=false;q('.presentation').inert=true;controls.hidden=false;q('#intro-title').innerHTML=ph(slide.title);q('#intro-copy').innerHTML=ph(slide.copy);fitHeading(q('#intro-title'));q('#intro-copy').hidden=!slide.copy;const box=stepsBox();box.hidden=!slide.steps;box.innerHTML=slide.steps?stepLabels.map((t,i)=>`<li><span class="step-icon">${functionalIcon(stepIcons[i])}</span><b>${t}</b></li>`).join(''):'';q('#chapter-select').value='0';q('#story-prev').disabled=pIndex===0;q('#story-next').disabled=false;q('#story-next').textContent='→';q('#story-pause').disabled=true;status('クリックで進む');if(first)startOpening();else replayIntro();intro.tabIndex=0;intro.focus({preventScroll:true});}
  function enter(){if(active)return;freeState=structuredClone(state);chapterEnds=[];active=true;window.FILTRIP_PRESENTING=true;q('.phone').inert=true;document.body.dataset.mode='story';document.body.classList.remove('guide-hidden');q('.mode-switch [data-mode=story]').setAttribute('aria-pressed','true');q('.mode-switch [data-mode=free]').setAttribute('aria-pressed','false');rememberMode('story');showPrologue(0,true);dispatchEvent(new Event('resize'));}
  function leave(){if(!active)return;stop();active=false;window.FILTRIP_PRESENTING=false;q('.phone').inert=false;document.body.dataset.mode='free';document.body.classList.remove('story-intro');intro.hidden=true;controls.hidden=true;q('.presentation').inert=false;state=newState();freeState=null;rememberMode('free');persist();render();q('.mode-switch [data-mode=story]').setAttribute('aria-pressed','false');q('.mode-switch [data-mode=free]').setAttribute('aria-pressed','true');dispatchEvent(new Event('resize'));q('.mode-switch [data-mode=free]').focus({preventScroll:true});}
  // Smooth scroll via FILTRIP_MOTION.scrollTo (instant when motion is reduced or a skip is running).
