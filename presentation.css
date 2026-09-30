@@ -28,3 +28,7 @@ body[data-mode=story] .presentation{padding-bottom:80px}
 .message-form textarea:focus{outline:2px solid #237cac;outline-offset:1px}
 .message-form button{flex:0 0 45px;margin-bottom:3px}
 .message{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+/* Opening: blank white page first. Header and controls fade in after the catch has appeared. */
+.site-header,.story-controls{transition:opacity .9s ease}
+body.story-opening .site-header,body.story-opening .story-controls{opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.site-header,.story-controls{transition:none}}
