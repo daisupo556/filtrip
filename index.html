@@ -19,7 +19,12 @@
 <link rel="stylesheet" href="app-polish.css">
 </head>
 <body>
-<script>try{if(sessionStorage.getItem("filtrip-mode")!=="free")document.body.classList.add("story-opening")}catch(e){document.body.classList.add("story-opening")}</script>
+<script>(function(){var b=document.body;try{if(sessionStorage.getItem("filtrip-mode")==="free")return}catch(e){}
+b.classList.add("story-opening");
+/* Escape hatch: if the scripts fail or never start, show the page instead of staying white. */
+function show(){b.classList.remove("story-opening")}
+var n=0,t=setInterval(function(){n++;if(window.FILTRIP_STORY||!b.classList.contains("story-opening")){clearInterval(t);return}if((document.readyState==="complete"&&n>=5)||n>=40){clearInterval(t);show()}},2000);
+addEventListener("error",function(e){if(e.target&&e.target.tagName==="SCRIPT")show()},true)})()</script>
 <header class="site-header"><a class="brand" href="#" aria-label="FILTRIP トップ">FILTRIP<span>FILTER × TRIP</span></a><nav class="mode-switch" aria-label="体験モード"><button data-mode="free" aria-pressed="true">自由に操作</button><button data-mode="story" aria-pressed="false">説明を見る</button></nav><button id="guide-toggle" class="quiet">案内を閉じる</button></header>
 <main class="presentation">
 <section class="demo-stage" aria-label="FILTRIPを体験する">

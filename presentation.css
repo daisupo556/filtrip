@@ -32,3 +32,5 @@ body[data-mode=story] .presentation{padding-bottom:80px}
 .site-header,.story-controls{transition:opacity .9s ease}
 body.story-opening .site-header,body.story-opening .story-controls{opacity:0;pointer-events:none}
 @media(prefers-reduced-motion:reduce){.site-header,.story-controls{transition:none}}
+body.story-opening .presentation{opacity:0!important;visibility:hidden}
+.chapter-intro:focus,.chapter-intro:focus-visible{outline:none}
